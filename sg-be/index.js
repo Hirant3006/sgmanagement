@@ -1,24 +1,44 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const cors = require('cors');
 const app = express();
 const port = 3000;
-const cors = require('cors');
 const auth = require('./middleware/auth');
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
 // SQLite setup
 const db = new sqlite3.Database('./family_business.db', (err) => {
-  if (err) console.error('DB Error:', err);
-  else console.log('Connected to SQLite');
+  if (err) {
+    console.error('DB Error:', err);
+  } else {
+    console.log('Connected to SQLite');
+    // Enable foreign keys
+    db.run('PRAGMA foreign_keys = ON', (err) => {
+      if (err) {
+        console.error('Error enabling foreign keys:', err);
+      } else {
+        console.log('Foreign keys enabled');
+      }
+    });
+  }
 });
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const machinesRouter = require('./routes/machines');
+const machineTypesRouter = require('./routes/machineTypes');
+const machineSubtypesRouter = require('./routes/machineSubtypes');
+const ordersRouter = require('./routes/orders');
 
 // Use routes
 app.use('/api/auth', authRoutes);
+app.use('/api/machines', machinesRouter);
+app.use('/api/machine-types', machineTypesRouter);
+app.use('/api/machine-subtypes', machineSubtypesRouter);
+app.use('/api/orders', ordersRouter);
 
 // Protected routes
 app.get('/api/inventory', auth, (req, res) => {
@@ -34,6 +54,34 @@ app.post('/api/inventory', auth, (req, res) => {
   db.run('INSERT INTO inventory (name, quantity) VALUES (?, ?)', [name, quantity], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ id: this.lastID, name, quantity });
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err.stack);
+    res.status(500).json({ error: 'Something went wrong!', details: err.message });
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  db.close((err) => {
+    if (err) {
+      console.error('Error closing database connection:', err);
+    } else {
+      console.log('Database connection closed');
+    }
+    process.exit(0);
   });
 });
 

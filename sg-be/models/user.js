@@ -1,6 +1,5 @@
-const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
-const db = new sqlite3.Database('./family_business.db');
+const db = require('../config/database');
 
 // Create users table if it doesn't exist
 db.run(`CREATE TABLE IF NOT EXISTS users (
