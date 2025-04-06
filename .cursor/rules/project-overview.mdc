@@ -1,0 +1,99 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Overview
+
+This project is a lightweight, cost-effective management system for a family business, built with a JavaScript-based tech stack. It consists of a Frontend (FE) and Backend (BE), designed to handle basic CRUD operations, user authentication, and simple analytics. The goal is to keep development and hosting costs as low as possible while providing a functional app for managing business operations.
+
+Frontend (FE): A React-based single-page application (SPA) with multi-page navigation, authentication, and a clean UI for authenticated users to manage inventory and view analytics.
+Backend (BE): A Node.js + Express server with SQLite for persistent storage, exposing RESTful APIs for inventory management and (future) authentication.
+Cost Strategy: Uses free, open-source tools (React, Express, SQLite) and free hosting tiers (e.g., Vercel) to minimize expenses.
+#  Key Features
+Authentication: Login page with protected routes for authenticated users.
+Inventory Management: CRUD operations (Create, Read, Update, Delete) for inventory items.
+Analytics: Basic stats like total items and low stock counts.
+Scalability: Modular structure allows easy addition of features (e.g., customers, orders).
+
+# Tech Stack
+## Frontend (sg-fe)
+Framework: React.js (with Vite for fast dev/build)
+Routing: React Router DOM
+State Management: React Context API (for auth)
+Styling: Tailwind CSS (optional, plain CSS as fallback)
+API Calls: Native fetch
+Dev Tools: npm, Vite
+## Backend (sg-be)
+Framework: Node.js + Express.js
+Database: SQLite (file-based, serverless)
+Dev Tools: npm, Nodemon (for auto-restart)
+
+
+# Project Structure
+## Frontend (sg-fe)
+sg-fe/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   └── Navbar.jsx       # (Future) Navigation bar
+│   ├── pages/              # Page-level components
+│   │   ├── Login.jsx       # Public login page
+│   │   ├── Dashboard.jsx   # Dashboard/Main Page user hub
+│   │   ├── Orders.jsx      # Machines CRUD
+│   │   └── MachineTypes.jsx# MachineTypes
+│   ├── context/            # State management
+│   │   └── AuthContext.jsx # Authentication context
+│   ├── App.jsx             # Main app with routing
+│   ├── index.css           # Global styles (Tailwind or plain CSS)
+│   ├── main.jsx            # Entry point
+├── public/                 # Static assets (e.g., favicon)
+├── package.json            # Dependencies and scripts
+├── vite.config.js          # Vite configuration
+src/components/: For reusable pieces like buttons or headers (e.g., add Navbar.jsx later).
+src/pages/: Distinct views for each route.
+src/context/: Manages global state (currently auth, expandable for more).
+App.jsx: Defines routes and wraps app with providers.
+## Backend (sg-be)
+sg-be/
+├── src/
+│   ├── config/             # Configuration files
+│   │   └── database.js     # SQLite connection setup
+│   ├── models/             # Database models
+│   │   ├── user.js         # User schema and queries
+│   │   └── orders.js       # order schema and queries
+│   │   └── machinetypes.js # Inventory schema and queries
+│   ├── routes/             # API route handlers
+│   │   ├── auth.js         # Authentication endpoints
+│   │   └── orders.js       # order schema and queries
+│   │   └── machinetypes.js # machine types schema and queries
+│   ├── middleware/         # Custom middleware
+│   │   └── auth.js         # JWT verification
+│   └── server.js           # Main server file (entry point)
+├── family_business.db      # SQLite database file
+├── package.json            # Dependencies and scripts
+index.js: Sets up Express server, SQLite DB, and API routes.
+family_business.db: Stores data (e.g., inventory table).
+Future Additions: Add routes/ and models/ folders if the app grows (e.g., separate auth routes).
+
+# Setup Instructions
+## Frontend (sg-fe)
+Navigate to folder: cd sg-fe
+Install dependencies: npm install
+Run dev server: npm run dev
+Access: http://localhost:5173
+## Backend (sg-be)
+Navigate to folder: cd sg-be
+Install dependencies: npm install
+Run dev server: npm run dev
+Access API: http://localhost:3000
+
+# Running Together
+Start BE first (sg-be: port 3000).
+Start FE (sg-fe: port 5173).
+Login with admin/pass (hardcoded for now).
+# API Endpoints (BE)
+GET /api/inventory: Fetch all inventory items.
+POST /api/inventory: Add a new item ({ name, quantity }).
+(Future) PUT /api/inventory/:id: Update an item.
+(Future) DELETE /api/inventory/:id: Delete an item.
+(Future) POST /api/login: Authenticate user.
