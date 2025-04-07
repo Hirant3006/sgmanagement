@@ -4,7 +4,41 @@ const db = require('../db');
 
 // Get all orders
 router.get('/', (req, res) => {
-    const sql = `
+    // Extract filter parameters from query
+    const {
+        dateFrom,
+        dateTo,
+        machineId,
+        machineTypeId,
+        machineSubtypeId,
+        source,
+        priceMin,
+        priceMax,
+        costOfGoodMin,
+        costOfGoodMax,
+        shippingCostMin,
+        shippingCostMax,
+        purchaseLocation
+    } = req.query;
+
+    console.log('Filter parameters received:', {
+        dateFrom,
+        dateTo,
+        machineId,
+        machineTypeId,
+        machineSubtypeId,
+        source,
+        priceMin,
+        priceMax,
+        costOfGoodMin,
+        costOfGoodMax,
+        shippingCostMin,
+        shippingCostMax,
+        purchaseLocation
+    });
+
+    // Build the SQL query with filters
+    let sql = `
         SELECT o.*, 
                m.name as machine_name,
                mt.name as machine_type_name,
@@ -13,16 +47,108 @@ router.get('/', (req, res) => {
         LEFT JOIN machines m ON o.machine_id = m.id
         LEFT JOIN machine_types mt ON o.machine_type_id = mt.id
         LEFT JOIN machine_subtypes mst ON o.machine_subtype_id = mst.id
-        ORDER BY o.date DESC
+        WHERE 1=1
     `;
     
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            console.error('Error fetching orders:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+    const params = [];
+
+    try {
+        // Add date range filter
+        if (dateFrom) {
+            sql += ` AND o.date >= ?`;
+            params.push(dateFrom);
         }
-        res.json(rows);
-    });
+        if (dateTo) {
+            sql += ` AND o.date <= ?`;
+            params.push(dateTo);
+        }
+
+        // Add machine filter
+        if (machineId) {
+            sql += ` AND o.machine_id = ?`;
+            params.push(machineId);
+        }
+
+        // Add machine type filter
+        if (machineTypeId) {
+            sql += ` AND o.machine_type_id = ?`;
+            params.push(machineTypeId);
+        }
+
+        // Add machine subtype filter
+        if (machineSubtypeId) {
+            sql += ` AND o.machine_subtype_id = ?`;
+            params.push(machineSubtypeId);
+        }
+
+        // Add source filter (partial match)
+        if (source) {
+            sql += ` AND o.source LIKE ?`;
+            params.push(`%${source}%`);
+        }
+
+        // Add price range filter
+        if (priceMin) {
+            sql += ` AND o.price >= ?`;
+            params.push(priceMin);
+        }
+        if (priceMax) {
+            sql += ` AND o.price <= ?`;
+            params.push(priceMax);
+        }
+
+        // Add cost of good range filter
+        if (costOfGoodMin) {
+            sql += ` AND o.cost_of_good >= ?`;
+            params.push(costOfGoodMin);
+        }
+        if (costOfGoodMax) {
+            sql += ` AND o.cost_of_good <= ?`;
+            params.push(costOfGoodMax);
+        }
+
+        // Add shipping cost range filter
+        if (shippingCostMin) {
+            sql += ` AND (o.shipping_cost >= ? OR o.shipping_cost IS NULL)`;
+            params.push(shippingCostMin);
+        }
+        if (shippingCostMax) {
+            sql += ` AND (o.shipping_cost <= ? OR o.shipping_cost IS NULL)`;
+            params.push(shippingCostMax);
+        }
+
+        // Add purchase location filter (partial match)
+        if (purchaseLocation) {
+            sql += ` AND o.purchase_location LIKE ?`;
+            params.push(`%${purchaseLocation}%`);
+        }
+
+        // Add ordering
+        sql += ` ORDER BY o.date DESC`;
+        
+        console.log('SQL Query:', sql);
+        console.log('Parameters:', params);
+        
+        db.all(sql, params, (err, rows) => {
+            if (err) {
+                console.error('Error fetching orders:', err);
+                return res.status(500).json({ 
+                    error: 'Internal server error', 
+                    details: err.message,
+                    sql: sql,
+                    params: params
+                });
+            }
+            console.log(`Found ${rows.length} orders`);
+            res.json(rows);
+        });
+    } catch (error) {
+        console.error('Error building query:', error);
+        res.status(500).json({ 
+            error: 'Internal server error', 
+            details: error.message 
+        });
+    }
 });
 
 // Get a single order
