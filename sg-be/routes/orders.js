@@ -140,7 +140,7 @@ router.get('/', (req, res) => {
                 });
             }
             console.log(`Found ${rows.length} orders`);
-            res.json(rows);
+            res.json(rows || []);
         });
     } catch (error) {
         console.error('Error building query:', error);

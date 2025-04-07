@@ -17,9 +17,14 @@ router.get('/', (req, res) => {
     db.all(sql, [], (err, rows) => {
         if (err) {
             console.error('Error fetching machines:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ 
+                error: 'Internal server error',
+                details: err.message,
+                sql: sql
+            });
         }
-        res.json(rows);
+        console.log(`Found ${rows ? rows.length : 0} machines`);
+        res.json(rows || []);
     });
 });
 
