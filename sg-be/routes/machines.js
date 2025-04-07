@@ -4,16 +4,23 @@ const db = require('../db');
 
 // Get all machines
 router.get('/', (req, res) => {
+    console.log('GET /machines request received');
     const sql = `
-        SELECT m.*, 
-               mt.name as machine_type_name,
-               mst.name as machine_subtype_name
+        SELECT 
+            m.id,
+            m.name,
+            m.created_at,
+            m.machine_type_id,
+            m.machine_subtype_id,
+            COALESCE(mt.name, '') as machine_type_name,
+            COALESCE(mst.name, '') as machine_subtype_name
         FROM machines m
         LEFT JOIN machine_types mt ON m.machine_type_id = mt.id
         LEFT JOIN machine_subtypes mst ON m.machine_subtype_id = mst.id
         ORDER BY m.name ASC
     `;
     
+    console.log('Executing SQL query:', sql);
     db.all(sql, [], (err, rows) => {
         if (err) {
             console.error('Error fetching machines:', err);
@@ -23,7 +30,7 @@ router.get('/', (req, res) => {
                 sql: sql
             });
         }
-        console.log(`Found ${rows ? rows.length : 0} machines`);
+        console.log(`Found ${rows ? rows.length : 0} machines:`, rows);
         res.json(rows || []);
     });
 });
