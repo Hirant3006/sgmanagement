@@ -1,0 +1,30 @@
+.resizable-table-container {
+  position: relative;
+  overflow: auto;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.resize-handle:hover {
+  background-color: #1890ff;
+}
+
+/* Style for the column being resized */
+.ant-table-thead > tr > th[data-column-key] {
+  position: relative;
+  user-select: none;
+}
+
+/* Add a visual indicator when resizing */
+.ant-table-thead > tr > th[data-column-key].resizing {
+  background-color: #f0f0f0;
+} 

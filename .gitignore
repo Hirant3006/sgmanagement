@@ -1,3 +1,12 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
 # Dependencies
 **/node_modules
 **/.pnp
@@ -9,6 +18,9 @@
 # Production
 **/build
 **/dist
+dist
+dist-ssr
+*.local
 
 # Misc
 .DS_Store
@@ -18,16 +30,13 @@
 **/.env.production.local
 **/.env
 
-# Logs
-**/npm-debug.log*
-**/yarn-debug.log*
-**/yarn-error.log*
-
 # Editor directories and files
+.vscode/*
+!.vscode/extensions.json
 .idea
-.vscode
 **/*.suo
 **/*.ntvs*
 **/*.njsproj
 **/*.sln
-**/*.sw? 
+**/*.sw?
+.vercel
