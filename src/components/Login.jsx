@@ -1,17 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import {
-    Box,
-    Container,
-    Paper,
-    TextField,
-    Button,
-    Typography,
-    Alert,
-    styled,
-} from '@mui/material';
+import { Layout, Card, Input, Button, Typography, Alert, Space } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import styled from '@emotion/styled';
 import logo from '../assets/logo.jpg';
+
+const { Content } = Layout;
+const { Title } = Typography;
 
 const Logo = styled('img')({
     width: '100px',
@@ -20,18 +16,20 @@ const Logo = styled('img')({
     marginBottom: '20px',
 });
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-    marginTop: theme.spacing(8),
-    padding: theme.spacing(4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-}));
-
-const StyledForm = styled('form')(({ theme }) => ({
+const StyledCard = styled(Card)({
+    maxWidth: '400px',
     width: '100%',
-    marginTop: theme.spacing(1),
-}));
+    padding: '24px',
+});
+
+const StyledContent = styled(Content)({
+    minHeight: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '24px',
+    background: '#f0f2f5',
+});
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -59,61 +57,52 @@ const Login = () => {
     };
 
     return (
-        <Container component="main" maxWidth="xs">
-            <StyledPaper elevation={3}>
-                <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Logo src={logo} alt="Xe Nước Mía Tuấn" />
-                    <Typography component="h1" variant="h5">
-                        Đăng nhập vào tài khoản
-                    </Typography>
-                </Box>
-                {error && (
-                    <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-                        {error}
-                    </Alert>
-                )}
-                <StyledForm onSubmit={handleSubmit}>
-                    <TextField
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        id="username"
-                        label="Tên đăng nhập"
-                        name="username"
-                        autoComplete="username"
-                        autoFocus
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                    />
-                    <TextField
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="password"
-                        label="Mật khẩu"
-                        type="password"
-                        id="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                    />
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        sx={{ mt: 3, mb: 2 }}
-                    >
-                        Đăng nhập
-                    </Button>
-                </StyledForm>
-            </StyledPaper>
-        </Container>
+        <Layout>
+            <StyledContent>
+                <StyledCard>
+                    <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
+                        <Logo src={logo} alt="Xe Nước Mía Tuấn" />
+                        <Title level={3}>
+                            Đăng nhập vào tài khoản
+                        </Title>
+                        {error && (
+                            <Alert
+                                message={error}
+                                type="error"
+                                showIcon
+                            />
+                        )}
+                        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                            <Input
+                                size="large"
+                                placeholder="Tên đăng nhập"
+                                prefix={<UserOutlined />}
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                autoFocus
+                            />
+                            <Input.Password
+                                size="large"
+                                placeholder="Mật khẩu"
+                                prefix={<LockOutlined />}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
+                            <Button
+                                type="primary"
+                                size="large"
+                                onClick={handleSubmit}
+                                block
+                            >
+                                Đăng nhập
+                            </Button>
+                        </Space>
+                    </Space>
+                </StyledCard>
+            </StyledContent>
+        </Layout>
     );
 };
 

@@ -1,89 +1,65 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Layout, Menu, Button } from 'antd';
 import {
-    Box,
-    Drawer,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    styled,
-    Divider,
-} from '@mui/material';
-import {
-    Home as HomeIcon,
-    ShoppingCart as OrdersIcon,
-    Settings as SettingsIcon,
-    Logout as LogoutIcon,
-} from '@mui/icons-material';
+    HomeOutlined,
+    ShoppingCartOutlined,
+    SettingOutlined,
+    LogoutOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+} from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
+import styled from '@emotion/styled';
 import logo from '../assets/logo.jpg';
+import { useState } from 'react';
 
-const drawerWidth = 240;
-
-const StyledDrawer = styled(Drawer)({
-    width: drawerWidth,
-    flexShrink: 0,
-    '& .MuiDrawer-paper': {
-        width: drawerWidth,
-        boxSizing: 'border-box',
-        backgroundColor: '#fff',
-        borderRight: '1px solid rgba(0, 0, 0, 0.12)',
-        display: 'flex',
-        flexDirection: 'column',
-    },
-});
-
-const LogoContainer = styled(Box)({
-    padding: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-});
+const { Sider } = Layout;
 
 const Logo = styled('img')({
     width: '40px',
     height: '40px',
     borderRadius: '50%',
+    cursor: 'pointer',
 });
 
-const StyledListItemButton = styled(ListItemButton)(({ selected }) => ({
-    margin: '4px 8px',
-    borderRadius: '8px',
-    '&:hover': {
-        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-    },
-    ...(selected && {
-        backgroundColor: 'rgba(0, 0, 0, 0.08) !important',
-    }),
-}));
+const LogoContainer = styled('div')({
+    padding: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+});
 
-const StyledListItemIcon = styled(ListItemIcon)({
-    minWidth: '48px',
-    color: 'rgba(0, 0, 0, 0.87)',
+const ToggleButton = styled(Button)({
+    position: 'absolute',
+    top: '16px',
+    right: '-16px',
+    zIndex: 1,
+    borderRadius: '0 4px 4px 0',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
 });
 
 const Sidebar = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { logout } = useAuth();
+    const [collapsed, setCollapsed] = useState(false);
 
-    const navigationItems = [
+    const menuItems = [
         {
+            key: '/dashboard',
+            icon: <HomeOutlined />,
             label: 'Trang chủ',
-            icon: <HomeIcon />,
-            url: '/dashboard',
         },
         {
+            key: '/orders',
+            icon: <ShoppingCartOutlined />,
             label: 'Đơn hàng',
-            icon: <OrdersIcon />,
-            url: '/orders',
         },
         {
+            key: '/machine-types',
+            icon: <SettingOutlined />,
             label: 'Loại máy',
-            icon: <SettingsIcon />,
-            url: '/machine-types',
         },
     ];
 
@@ -92,55 +68,57 @@ const Sidebar = ({ children }) => {
         navigate('/login');
     };
 
+    const toggleSidebar = () => {
+        setCollapsed(!collapsed);
+    };
+
     return (
-        <Box sx={{ display: 'flex' }}>
-            <StyledDrawer variant="permanent">
+        <Layout style={{ minHeight: '100vh' }}>
+            <Sider
+                width={240}
+                theme="light"
+                collapsible
+                collapsed={collapsed}
+                onCollapse={setCollapsed}
+                trigger={null}
+                style={{
+                    borderRight: '1px solid rgba(0, 0, 0, 0.06)',
+                    position: 'relative',
+                }}
+            >
+                <ToggleButton 
+                    type="text" 
+                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} 
+                    onClick={toggleSidebar}
+                />
                 <LogoContainer>
                     <Logo src={logo} alt="Logo" onClick={() => navigate('/dashboard')} />
                 </LogoContainer>
-                <List sx={{ pt: 1, flex: 1 }}>
-                    {navigationItems.map((item) => (
-                        <ListItem key={item.url} disablePadding>
-                            <StyledListItemButton
-                                selected={location.pathname === item.url}
-                                onClick={() => navigate(item.url)}
-                            >
-                                <StyledListItemIcon>
-                                    {item.icon}
-                                </StyledListItemIcon>
-                                <ListItemText 
-                                    primary={item.label}
-                                    primaryTypographyProps={{
-                                        style: { fontWeight: location.pathname === item.url ? 600 : 400 }
-                                    }}
-                                />
-                            </StyledListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
-                <Divider />
-                <List>
-                    <ListItem disablePadding>
-                        <StyledListItemButton onClick={handleLogout}>
-                            <StyledListItemIcon>
-                                <LogoutIcon />
-                            </StyledListItemIcon>
-                            <ListItemText primary="Đăng xuất" />
-                        </StyledListItemButton>
-                    </ListItem>
-                </List>
-            </StyledDrawer>
-            <Box
-                component="main"
-                sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    width: `calc(100% - ${drawerWidth}px)`,
-                }}
-            >
+                <Menu
+                    mode="inline"
+                    selectedKeys={[location.pathname]}
+                    style={{ borderRight: 0 }}
+                    items={[
+                        ...menuItems,
+                        {
+                            key: 'logout',
+                            icon: <LogoutOutlined />,
+                            label: 'Đăng xuất',
+                            onClick: handleLogout,
+                            style: { marginTop: 'auto' },
+                        },
+                    ]}
+                    onClick={({ key }) => {
+                        if (key !== 'logout') {
+                            navigate(key);
+                        }
+                    }}
+                />
+            </Sider>
+            <Layout style={{ padding: '24px' }}>
                 {children}
-            </Box>
-        </Box>
+            </Layout>
+        </Layout>
     );
 };
 
