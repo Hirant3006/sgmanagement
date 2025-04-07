@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: sugarcanemachine-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_PATH
+        value: /opt/render/project/src/data/family_business.db
+      - key: CORS_ORIGIN
+        value: https://sugarcanemachine.vercel.app
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1 

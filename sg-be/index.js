@@ -1,37 +1,33 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
-const port = process.env.PORT || 3000;
-const auth = require('./middleware/auth');
+const config = require('./config');
 const db = require('./db');
 
+const app = express();
+
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors({
+    origin: config.corsOrigin,
+    credentials: true
+}));
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const machinesRouter = require('./routes/machines');
-const machineTypesRouter = require('./routes/machineTypes');
-const machineSubtypesRouter = require('./routes/machineSubtypes');
-const ordersRouter = require('./routes/orders');
-
-// Use routes
-app.use('/api/auth', authRoutes);
-app.use('/api/machines', machinesRouter);
-app.use('/api/machine-types', machineTypesRouter);
-app.use('/api/machine-subtypes', machineSubtypesRouter);
-app.use('/api/orders', ordersRouter);
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/machines', require('./routes/machines'));
+app.use('/api/machine-types', require('./routes/machineTypes'));
+app.use('/api/machine-subtypes', require('./routes/machineSubtypes'));
 
 // Protected routes
-app.get('/api/inventory', auth, (req, res) => {
+app.get('/api/inventory', require('./middleware/auth'), (req, res) => {
   db.all('SELECT * FROM inventory', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.post('/api/inventory', auth, (req, res) => {
+app.post('/api/inventory', require('./middleware/auth'), (req, res) => {
   const { name, quantity } = req.body;
   if (!name || !quantity) return res.status(400).json({ error: 'Missing data' });
   db.run('INSERT INTO inventory (name, quantity) VALUES (?, ?)', [name, quantity], function (err) {
@@ -42,18 +38,27 @@ app.post('/api/inventory', auth, (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Global error handler:', err.stack);
-    res.status(500).json({ error: 'Something went wrong!', details: err.message });
+    console.error(err.stack);
+    res.status(500).json({ 
+        error: 'Internal Server Error',
+        message: config.isDevelopment ? err.message : 'Something went wrong'
+    });
+});
+
+// Start server
+app.listen(config.port, () => {
+    console.log(`Server is running in ${config.env} mode on port ${config.port}`);
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Promise Rejection:', err);
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
+    process.exit(1);
 });
 
 // Graceful shutdown
@@ -67,5 +72,3 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
-
-app.listen(port, () => console.log(`Server on http://localhost:${port}`));
