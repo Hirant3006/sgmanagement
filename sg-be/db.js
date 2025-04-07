@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 // Create a single database connection to be shared across the application
-const db = new sqlite3.Database(path.join(__dirname, '../family_business.db'), (err) => {
+const db = new sqlite3.Database(path.join(__dirname, './family_business.db'), (err) => {
     if (err) {
         console.error('Error connecting to database:', err);
     } else {

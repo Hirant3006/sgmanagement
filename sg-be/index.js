@@ -1,30 +1,13 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const auth = require('./middleware/auth');
+const db = require('./db');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// SQLite setup
-const db = new sqlite3.Database('./family_business.db', (err) => {
-  if (err) {
-    console.error('DB Error:', err);
-  } else {
-    console.log('Connected to SQLite');
-    // Enable foreign keys
-    db.run('PRAGMA foreign_keys = ON', (err) => {
-      if (err) {
-        console.error('Error enabling foreign keys:', err);
-      } else {
-        console.log('Foreign keys enabled');
-      }
-    });
-  }
-});
 
 // Import routes
 const authRoutes = require('./routes/auth');

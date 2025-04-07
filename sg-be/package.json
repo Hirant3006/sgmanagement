@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "create-tables": "node src/scripts/createTables.js",
-    "init-data": "node src/scripts/initDefaultData.js",
+    "create-tables": "node scripts/createTables.js",
+    "init-data": "node scripts/initDefaultData.js",
     "seed-orders": "node scripts/seedOrders.js",
     "verify-db": "node scripts/verifyDb.js"
   },
