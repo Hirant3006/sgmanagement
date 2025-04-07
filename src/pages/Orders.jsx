@@ -9,6 +9,8 @@ const { Content } = Layout;
 const { Panel } = Collapse;
 const { RangePicker } = DatePicker;
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -153,7 +155,7 @@ const Orders = () => {
                 params.append('purchaseLocation', filters.purchaseLocation);
             }
             
-            const url = `http://localhost:3000/api/orders?${params.toString()}`;
+            const url = `${API_URL}/orders?${params.toString()}`;
             console.log('Fetching orders with URL:', url);
             console.log('Current filters state:', filters);
             
@@ -191,7 +193,7 @@ const Orders = () => {
 
     const fetchMachines = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/machines');
+            const response = await fetch(`${API_URL}/machines`);
             const data = await response.json();
             setMachines(data);
         } catch (error) {
@@ -202,7 +204,7 @@ const Orders = () => {
 
     const fetchMachineTypes = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/machine-types');
+            const response = await fetch(`${API_URL}/machine-types`);
             const data = await response.json();
             setMachineTypes(data);
         } catch (error) {
@@ -213,12 +215,12 @@ const Orders = () => {
 
     const fetchMachineSubtypes = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/machine-subtypes');
+            const response = await fetch(`${API_URL}/machine-subtypes`);
             const data = await response.json();
             setMachineSubtypes(data);
         } catch (error) {
             console.error('Error fetching machine subtypes:', error);
-            messageApi.error('Không thể tải danh sách phân loại máy');
+            messageApi.error('Không thể tải danh sách loại máy con');
         }
     };
 
@@ -529,7 +531,7 @@ const Orders = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/orders/${id}`, {
+            const response = await fetch(`${API_URL}/orders/${id}`, {
                 method: 'DELETE'
             });
             
@@ -565,11 +567,11 @@ const Orders = () => {
                 note: values.note
             };
             
-            let url = 'http://localhost:3000/api/orders';
+            let url = `${API_URL}/orders`;
             let method = 'POST';
             
             if (editingId) {
-                url = `http://localhost:3000/api/orders/${editingId}`;
+                url = `${API_URL}/orders/${editingId}`;
                 method = 'PUT';
             }
             

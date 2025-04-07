@@ -28,15 +28,18 @@ import ResizableTable from '../components/ResizableTable';
 const { Title } = Typography;
 const { Content } = Layout;
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const MachineTypes = () => {
     const [currentTab, setCurrentTab] = useState('0');
     const [machines, setMachines] = useState([]);
     const [machineTypes, setMachineTypes] = useState([]);
     const [machineSubtypes, setMachineSubtypes] = useState([]);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [formData, setFormData] = useState({ name: '' });
+    const [modalVisible, setModalVisible] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+    });
     const [searchText, setSearchText] = useState('');
 
     // Fetch data based on current tab
@@ -84,24 +87,22 @@ const MachineTypes = () => {
         setSearchText(value);
     };
 
-    const showModal = (item = null) => {
-        if (item) {
-            setEditMode(true);
-            setSelectedItem(item);
-            setFormData({ name: item.name });
-        } else {
-            setEditMode(false);
-            setSelectedItem(null);
-            setFormData({ name: '' });
-        }
-        setIsModalVisible(true);
+    const handleAdd = () => {
+        setEditMode(false);
+        setFormData({ name: '' });
+        setModalVisible(true);
+    };
+
+    const handleEdit = (record) => {
+        setEditMode(true);
+        setFormData({ name: record.name });
+        setModalVisible(true);
     };
 
     const handleCancel = () => {
-        setIsModalVisible(false);
+        setModalVisible(false);
         setFormData({ name: '' });
         setEditMode(false);
-        setSelectedItem(null);
     };
 
     const handleSubmit = async () => {
@@ -109,11 +110,9 @@ const MachineTypes = () => {
             const endpoint = currentTab === '0' ? 'machines' : 
                            currentTab === '1' ? 'machine-types' : 
                            'machine-subtypes';
-            const url = `http://localhost:3000/api/${endpoint}${editMode ? `/${selectedItem.id}` : ''}`;
-            const method = editMode ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
+            
+            const response = await fetch(`${API_URL}/${endpoint}`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -122,7 +121,7 @@ const MachineTypes = () => {
 
             if (response.ok) {
                 // Refresh data
-                const fetchResponse = await fetch(`http://localhost:3000/api/${endpoint}`);
+                const fetchResponse = await fetch(`${API_URL}/${endpoint}`);
                 const data = await fetchResponse.json();
                 
                 if (currentTab === '0') setMachines(data);
@@ -142,13 +141,13 @@ const MachineTypes = () => {
                 const endpoint = currentTab === '0' ? 'machines' : 
                                currentTab === '1' ? 'machine-types' : 
                                'machine-subtypes';
-                const response = await fetch(`http://localhost:3000/api/${endpoint}/${id}`, {
+                const response = await fetch(`${API_URL}/${endpoint}/${id}`, {
                     method: 'DELETE',
                 });
 
                 if (response.ok) {
                     // Refresh data
-                    const fetchResponse = await fetch(`http://localhost:3000/api/${endpoint}`);
+                    const fetchResponse = await fetch(`${API_URL}/${endpoint}`);
                     const data = await fetchResponse.json();
                     
                     if (currentTab === '0') setMachines(data);
@@ -186,7 +185,7 @@ const MachineTypes = () => {
                         <Button 
                             type="text" 
                             icon={<EditOutlined />} 
-                            onClick={() => showModal(record)}
+                            onClick={() => handleEdit(record)}
                         />
                     </Tooltip>
                     <Tooltip title="Xóa">
@@ -280,12 +279,7 @@ const MachineTypes = () => {
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
-                            onClick={() => {
-                                setEditMode(false);
-                                setSelectedItem(null);
-                                setFormData({ name: '' });
-                                setIsModalVisible(true);
-                            }}
+                            onClick={handleAdd}
                         >
                             Thêm máy móc
                         </Button>
@@ -311,7 +305,7 @@ const MachineTypes = () => {
 
                 <Modal
                     title={editMode ? 'Sửa thông tin' : 'Thêm mới'}
-                    open={isModalVisible}
+                    open={modalVisible}
                     onOk={handleSubmit}
                     onCancel={handleCancel}
                     okText={editMode ? 'Cập nhật' : 'Thêm'}

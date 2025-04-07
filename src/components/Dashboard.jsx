@@ -14,6 +14,8 @@ import {
 } from '@shopify/polaris';
 import logo from '../assets/logo.jpg';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Dashboard = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -24,7 +26,7 @@ const Dashboard = () => {
         const fetchInventory = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:3000/api/inventory', {
+                const response = await fetch(`${API_URL}/inventory`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
