@@ -10,18 +10,24 @@ app.use(express.json());
 
 // CORS configuration
 const allowedOrigins = config.corsOrigin ? config.corsOrigin.split(',') : ['http://localhost:5173'];
+console.log('Allowed CORS origins:', allowedOrigins);
+
 app.use(cors({
     origin: function(origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
         if (allowedOrigins.indexOf(origin) === -1) {
+            console.log('Blocked request from origin:', origin);
             const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
+        console.log('Allowed request from origin:', origin);
         return callback(null, true);
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Routes
@@ -30,23 +36,6 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/machines', require('./routes/machines'));
 app.use('/api/machine-types', require('./routes/machineTypes'));
 app.use('/api/machine-subtypes', require('./routes/machineSubtypes'));
-
-// Protected routes
-app.get('/api/inventory', require('./middleware/auth'), (req, res) => {
-  db.all('SELECT * FROM inventory', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-app.post('/api/inventory', require('./middleware/auth'), (req, res) => {
-  const { name, quantity } = req.body;
-  if (!name || !quantity) return res.status(400).json({ error: 'Missing data' });
-  db.run('INSERT INTO inventory (name, quantity) VALUES (?, ?)', [name, quantity], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: this.lastID, name, quantity });
-  });
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
