@@ -5,30 +5,25 @@ const db = require('./db');
 
 const app = express();
 
-// Middleware
+// Basic middleware
 app.use(express.json());
 
-// CORS configuration
-const allowedOrigins = config.corsOrigin ? config.corsOrigin.split(',') : ['http://localhost:5173'];
-console.log('Allowed CORS origins:', allowedOrigins);
+// Simple CORS configuration
+app.use(cors());
 
-app.use(cors({
-    origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) === -1) {
-            console.log('Blocked request from origin:', origin);
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        console.log('Allowed request from origin:', origin);
-        return callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Add CORS headers to all responses
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle OPTIONS method
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -47,8 +42,10 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(config.port, () => {
-    console.log(`Server is running in ${config.env} mode on port ${config.port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running in ${config.env} mode on port ${PORT}`);
+    console.log('CORS is enabled for all origins');
 });
 
 // Handle unhandled promise rejections
@@ -64,12 +61,12 @@ process.on('uncaughtException', (err) => {
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  db.close((err) => {
-    if (err) {
-      console.error('Error closing database connection:', err);
-    } else {
-      console.log('Database connection closed');
-    }
-    process.exit(0);
-  });
+    db.close((err) => {
+        if (err) {
+            console.error('Error closing database connection:', err);
+        } else {
+            console.log('Database connection closed');
+        }
+        process.exit(0);
+    });
 });
