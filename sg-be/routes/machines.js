@@ -9,7 +9,6 @@ router.get('/', (req, res) => {
         SELECT 
             m.id,
             m.name,
-            m.created_at,
             m.machine_type_id,
             m.machine_subtype_id,
             COALESCE(mt.name, '') as machine_type_name,
@@ -38,9 +37,13 @@ router.get('/', (req, res) => {
 // Get machine by ID
 router.get('/:id', (req, res) => {
     const sql = `
-        SELECT m.*, 
-               mt.name as machine_type_name,
-               mst.name as machine_subtype_name
+        SELECT 
+            m.id,
+            m.name,
+            m.machine_type_id,
+            m.machine_subtype_id,
+            COALESCE(mt.name, '') as machine_type_name,
+            COALESCE(mst.name, '') as machine_subtype_name
         FROM machines m
         LEFT JOIN machine_types mt ON m.machine_type_id = mt.id
         LEFT JOIN machine_subtypes mst ON m.machine_subtype_id = mst.id
