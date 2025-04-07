@@ -6,8 +6,11 @@ import { fileURLToPath } from 'url';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/',
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false
   },
   resolve: {
     alias: {
