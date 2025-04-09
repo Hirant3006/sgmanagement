@@ -39,6 +39,21 @@ const ToggleButton = styled(Button)({
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
 });
 
+const MenuContainer = styled('div')({
+    display: 'flex',
+    flexDirection: 'column',
+    height: 'calc(100% - 73px)', // Subtract the height of the logo container
+});
+
+const MainMenu = styled(Menu)({
+    flex: 1,
+});
+
+const LogoutButton = styled(Button)({
+    margin: '16px',
+    width: 'calc(100% - 32px)',
+});
+
 const Sidebar = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -94,26 +109,25 @@ const Sidebar = ({ children }) => {
                 <LogoContainer>
                     <Logo src={logo} alt="Logo" onClick={() => navigate('/dashboard')} />
                 </LogoContainer>
-                <Menu
-                    mode="inline"
-                    selectedKeys={[location.pathname]}
-                    style={{ borderRight: 0 }}
-                    items={[
-                        ...menuItems,
-                        {
-                            key: 'logout',
-                            icon: <LogoutOutlined />,
-                            label: 'Đăng xuất',
-                            onClick: handleLogout,
-                            style: { marginTop: 'auto' },
-                        },
-                    ]}
-                    onClick={({ key }) => {
-                        if (key !== 'logout') {
+                <MenuContainer>
+                    <MainMenu
+                        mode="inline"
+                        selectedKeys={[location.pathname]}
+                        style={{ borderRight: 0 }}
+                        items={menuItems}
+                        onClick={({ key }) => {
                             navigate(key);
-                        }
-                    }}
-                />
+                        }}
+                    />
+                    <LogoutButton 
+                        type="primary" 
+                        danger
+                        icon={<LogoutOutlined />} 
+                        onClick={handleLogout}
+                    >
+                        {!collapsed && 'Đăng xuất'}
+                    </LogoutButton>
+                </MenuContainer>
             </Sider>
             <Layout style={{ padding: '24px' }}>
                 {children}
