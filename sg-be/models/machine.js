@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const db = require('../db');
 
 // Create machines table if it doesn't exist
 db.run(`CREATE TABLE IF NOT EXISTS machines (

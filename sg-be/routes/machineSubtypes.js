@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const MachineSubtype = require('../models/machineSubtype');
+const auth = require('../middleware/auth');
+
+// Apply auth middleware to all routes
+router.use(auth);
 
 // Get all machine subtypes
 router.get('/', async (req, res) => {

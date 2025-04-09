@@ -2,43 +2,39 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 const db = require('./db');
+const authRoutes = require('./routes/auth');
+const machineRoutes = require('./routes/machines');
+const machineTypeRoutes = require('./routes/machineTypes');
+const machineSubtypeRoutes = require('./routes/machineSubtypes');
 
 const app = express();
 
-// Basic middleware
-app.use(express.json());
-
-// Simple CORS configuration
+// Enable CORS for all routes
 app.use(cors());
 
-// Add CORS headers to all responses
+// Add headers to allow CORS
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    // Handle OPTIONS method
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200);
     }
     next();
 });
 
+app.use(express.json());
+
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/machines', require('./routes/machines'));
-app.use('/api/machine-types', require('./routes/machineTypes'));
-app.use('/api/machine-subtypes', require('./routes/machineSubtypes'));
+app.use('/api/auth', authRoutes);
+app.use('/api/machines', machineRoutes);
+app.use('/api/machine-types', machineTypeRoutes);
+app.use('/api/machine-subtypes', machineSubtypeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ 
-        error: 'Internal Server Error',
-        message: config.isDevelopment ? err.message : 'Something went wrong'
-    });
+    res.status(500).json({ error: 'Something broke!' });
 });
 
 // Start server
