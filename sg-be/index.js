@@ -9,20 +9,32 @@ const machineSubtypeRoutes = require('./routes/machineSubtypes');
 
 const app = express();
 
-// Enable CORS for all routes
-app.use(cors());
+// CORS configuration
+const allowedOrigins = [
+    'https://sgmanagement.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+];
 
-// Add headers to allow CORS
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
+app.use(cors({
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            console.log('Blocked request from origin:', origin);
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        console.log('Allowed request from origin:', origin);
+        return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
+// Middleware
 app.use(express.json());
 
 // Routes
@@ -34,14 +46,17 @@ app.use('/api/machine-subtypes', machineSubtypeRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ error: 'Something broke!' });
+    res.status(500).json({ 
+        error: 'Internal Server Error',
+        message: config.isDevelopment ? err.message : 'Something went wrong'
+    });
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running in ${config.env} mode on port ${PORT}`);
-    console.log('CORS is enabled for all origins');
+    console.log('CORS is enabled for origins:', allowedOrigins);
 });
 
 // Handle unhandled promise rejections
