@@ -14,9 +14,9 @@ import {
     EditOutlined,
     DeleteOutlined,
     SearchOutlined,
-    AppstoreOutlined
+    ToolOutlined
 } from '@ant-design/icons';
-import { fetchMachineTypes } from '../services/machineTypeService';
+import { fetchMachines } from '../services/machineService';
 import ResizableTable from '../components/ResizableTable';
 
 const { Title } = Typography;
@@ -24,8 +24,8 @@ const { Content } = Layout;
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const MachineTypes = () => {
-    const [machineTypes, setMachineTypes] = useState([]);
+const Machines = () => {
+    const [machines, setMachines] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({
@@ -33,14 +33,15 @@ const MachineTypes = () => {
     });
     const [searchText, setSearchText] = useState('');
 
-    // Fetch machine types data
+    // Fetch machines data
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await fetchMachineTypes();
-                setMachineTypes(data);
+                const data = await fetchMachines();
+                console.log({data})
+                setMachines(data);
             } catch (error) {
-                console.error('Error fetching machine types:', error);
+                console.error('Error fetching machines:', error);
             }
         };
 
@@ -50,9 +51,9 @@ const MachineTypes = () => {
 
     // Filter data based on search text
     const getFilteredData = () => {
-        if (!searchText) return machineTypes;
+        if (!searchText) return machines;
 
-        return machineTypes.filter(item =>
+        return machines.filter(item =>
             item.name.toLowerCase().includes(searchText.toLowerCase())
         );
     };
@@ -81,7 +82,7 @@ const MachineTypes = () => {
 
     const handleSubmit = async () => {
         try {
-            const endpoint = 'machine-types';
+            const endpoint = 'machines';
 
             const response = await fetch(`${API_URL}/${endpoint}`, {
                 method: 'POST',
@@ -95,7 +96,7 @@ const MachineTypes = () => {
                 // Refresh data
                 const fetchResponse = await fetch(`${API_URL}/${endpoint}`);
                 const data = await fetchResponse.json();
-                setMachineTypes(data);
+                setMachines(data);
                 handleCancel();
             }
         } catch (error) {
@@ -106,7 +107,7 @@ const MachineTypes = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa mục này?')) {
             try {
-                const endpoint = 'machine-types';
+                const endpoint = 'machines';
                 const response = await fetch(`${API_URL}/${endpoint}/${id}`, {
                     method: 'DELETE',
                 });
@@ -115,7 +116,7 @@ const MachineTypes = () => {
                     // Refresh data
                     const fetchResponse = await fetch(`${API_URL}/${endpoint}`);
                     const data = await fetchResponse.json();
-                    setMachineTypes(data);
+                    setMachines(data);
                 }
             } catch (error) {
                 console.error('Error deleting data:', error);
@@ -165,57 +166,58 @@ const MachineTypes = () => {
     ];
 
     return (
-        <Layout>
-            <Card>
-                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={handleAdd}
-                    >
-                        Thêm loại máy
-                    </Button>
-                </div>
+        <div>
+                <Card>
+                    <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={handleAdd}
+                        >
+                            Thêm máy móc
+                        </Button>
+                    </div>
 
-                <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Input
-                        placeholder="Tìm kiếm..."
-                        value={searchText}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        prefix={<SearchOutlined />}
-                        style={{ width: 300 }}
+                    <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Input
+                            placeholder="Tìm kiếm..."
+                            value={searchText}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            prefix={<SearchOutlined />}
+                            style={{ width: 300 }}
+                        />
+                    </div>
+
+                    <ResizableTable
+                        dataSource={getFilteredData()}
+                        columns={columns}
+                        rowKey="id"
+                        pagination={{ pageSize: 5 }}
+                        scroll={{ x: 500 }}
+                        locale={{
+                            emptyText: 'Không có dữ liệu'
+                        }}
                     />
-                </div>
+                </Card>
 
-                <ResizableTable
-                    dataSource={getFilteredData()}
-                    columns={columns}
-                    rowKey="id"
-                    pagination={{ pageSize: 5 }}
-                    scroll={{ x: 500 }}
-                    locale={{
-                        emptyText: 'Không có dữ liệu'
-                    }}
-                />
-            </Card>
+                <Modal
+                    title={editMode ? 'Sửa thông tin' : 'Thêm mới'}
+                    open={modalVisible}
+                    onOk={handleSubmit}
+                    onCancel={handleCancel}
+                    okText={editMode ? 'Cập nhật' : 'Thêm'}
+                    cancelText="Hủy"
+                >
+                    <Input
+                        autoFocus
+                        placeholder="Tên"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ name: e.target.value })}
+                    />
+                </Modal>
+        </div>
 
-            <Modal
-                title={editMode ? 'Sửa thông tin' : 'Thêm mới'}
-                open={modalVisible}
-                onOk={handleSubmit}
-                onCancel={handleCancel}
-                okText={editMode ? 'Cập nhật' : 'Thêm'}
-                cancelText="Hủy"
-            >
-                <Input
-                    autoFocus
-                    placeholder="Tên"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ name: e.target.value })}
-                />
-            </Modal>
-        </Layout>
     );
 };
 
-export default MachineTypes; 
+export default Machines; 

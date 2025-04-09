@@ -41,11 +41,18 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        console.log('Login attempt with username:', username);
+        console.log('Environment:', import.meta.env.VITE_APP_ENV);
+        console.log('API URL:', import.meta.env.VITE_API_URL);
 
         try {
-            await login(username, password);
+            const result = await login(username, password);
+            console.log('Login successful, result:', result);
+            console.log('Token after login:', localStorage.getItem('token'));
+            console.log('User after login:', localStorage.getItem('user'));
             navigate('/dashboard');
         } catch (err) {
+            console.error('Login error:', err);
             setError(err.message);
         }
     };

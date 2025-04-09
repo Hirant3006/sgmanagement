@@ -12,8 +12,9 @@ export const fetchMachines = async () => {
         headers: getHeaders()
     });
     if (!response.ok) {
-        throw new Error('Failed to fetch machines');
+        throw new Error('Không thể tải danh sách máy');
     }
+    console.log({response})
     return response.json();
 };
 
@@ -24,7 +25,7 @@ export const createMachine = async (machine) => {
         body: JSON.stringify(machine),
     });
     if (!response.ok) {
-        throw new Error('Failed to create machine');
+        throw new Error('Không thể tạo máy mới');
     }
     return response.json();
 };
@@ -36,7 +37,7 @@ export const updateMachine = async (id, machine) => {
         body: JSON.stringify(machine),
     });
     if (!response.ok) {
-        throw new Error('Failed to update machine');
+        throw new Error('Không thể cập nhật máy');
     }
     return response.json();
 };
@@ -47,6 +48,7 @@ export const deleteMachine = async (id) => {
         headers: getHeaders(),
     });
     if (!response.ok) {
-        throw new Error('Failed to delete machine');
+        throw new Error('Không thể xóa máy');
     }
+    return response.json();
 }; 

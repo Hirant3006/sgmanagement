@@ -67,14 +67,9 @@ const Sidebar = ({ children }) => {
             label: 'Trang chủ',
         },
         {
-            key: '/orders',
-            icon: <ShoppingCartOutlined />,
-            label: 'Đơn hàng',
-        },
-        {
-            key: '/machine-types',
+            key: '/machines',
             icon: <SettingOutlined />,
-            label: 'Loại máy',
+            label: 'Quản lý máy móc',
         },
     ];
 

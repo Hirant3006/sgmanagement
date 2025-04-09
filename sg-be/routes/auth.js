@@ -38,6 +38,17 @@ router.post('/login', [
     body('username').trim().escape(),
     body('password').exists()
 ], async (req, res) => {
+    // Set CORS headers specifically for this route
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

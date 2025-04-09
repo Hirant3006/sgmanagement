@@ -5,8 +5,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './components/Login';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import Orders from './pages/Orders';
-import MachineTypes from './pages/MachineTypes';
+import MachineManagement from './pages/MachineManagement';
 import { useEffect } from 'react';
 
 const { defaultAlgorithm } = theme;
@@ -61,21 +60,11 @@ const App = () => {
                             }
                         />
                         <Route
-                            path="/orders"
+                            path="/machines"
                             element={
                                 <PrivateRoute>
                                     <Sidebar>
-                                        <Orders />
-                                    </Sidebar>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="/machine-types"
-                            element={
-                                <PrivateRoute>
-                                    <Sidebar>
-                                        <MachineTypes />
+                                        <MachineManagement />
                                     </Sidebar>
                                 </PrivateRoute>
                             }

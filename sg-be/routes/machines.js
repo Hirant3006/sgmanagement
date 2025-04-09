@@ -4,36 +4,65 @@ const db = require('../db');
 
 // Get all machines
 router.get('/', (req, res) => {
+    console.log('GET /machines request received');
     const sql = `
-        SELECT m.*, 
-               mt.name as machine_type_name,
-               mst.name as machine_subtype_name
+        SELECT 
+            m.id,
+            m.name,
+            m.machine_type_id,
+            m.machine_subtype_id,
+            COALESCE(mt.name, '') as machine_type_name,
+            COALESCE(mst.name, '') as machine_subtype_name
         FROM machines m
         LEFT JOIN machine_types mt ON m.machine_type_id = mt.id
         LEFT JOIN machine_subtypes mst ON m.machine_subtype_id = mst.id
         ORDER BY m.name ASC
     `;
     
+    console.log('Executing SQL query:', sql);
     db.all(sql, [], (err, rows) => {
         if (err) {
             console.error('Error fetching machines:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ 
+                error: 'Internal server error',
+                details: err.message,
+                sql: sql
+            });
         }
-        res.json(rows);
+        console.log(`Found ${rows ? rows.length : 0} machines:`, rows);
+        res.json(rows || []);
     });
 });
 
 // Get machine by ID
-router.get('/:id', async (req, res) => {
-    try {
-        const machine = await Machine.getById(req.params.id);
-        if (!machine) {
+router.get('/:id', (req, res) => {
+    const sql = `
+        SELECT 
+            m.id,
+            m.name,
+            m.machine_type_id,
+            m.machine_subtype_id,
+            COALESCE(mt.name, '') as machine_type_name,
+            COALESCE(mst.name, '') as machine_subtype_name
+        FROM machines m
+        LEFT JOIN machine_types mt ON m.machine_type_id = mt.id
+        LEFT JOIN machine_subtypes mst ON m.machine_subtype_id = mst.id
+        WHERE m.id = ?
+    `;
+    
+    db.get(sql, [req.params.id], (err, row) => {
+        if (err) {
+            console.error('Error fetching machine:', err);
+            return res.status(500).json({ 
+                error: 'Internal server error',
+                details: err.message
+            });
+        }
+        if (!row) {
             return res.status(404).json({ error: 'Machine not found' });
         }
-        res.json(machine);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+        res.json(row);
+    });
 });
 
 // Create a new machine
@@ -70,20 +99,40 @@ router.post('/', (req, res) => {
 });
 
 // Update machine
-router.put('/:id', async (req, res) => {
-    try {
-        const { name } = req.body;
-        if (!name) {
-            return res.status(400).json({ error: 'Name is required' });
+router.put('/:id', (req, res) => {
+    const { name, machine_type_id, machine_subtype_id } = req.body;
+    
+    // Validate required fields
+    if (!name) {
+        return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    const sql = `
+        UPDATE machines 
+        SET name = ?, 
+            machine_type_id = ?, 
+            machine_subtype_id = ?
+        WHERE id = ?
+    `;
+    
+    db.run(sql, [name, machine_type_id, machine_subtype_id, req.params.id], function(err) {
+        if (err) {
+            console.error('Error updating machine:', err);
+            return res.status(500).json({ 
+                error: 'Internal server error',
+                details: err.message
+            });
         }
-        const changes = await Machine.update(req.params.id, name);
-        if (changes === 0) {
+        if (this.changes === 0) {
             return res.status(404).json({ error: 'Machine not found' });
         }
-        res.json({ id: req.params.id, name });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+        res.json({ 
+            id: req.params.id, 
+            name,
+            machine_type_id,
+            machine_subtype_id
+        });
+    });
 });
 
 // Delete a machine

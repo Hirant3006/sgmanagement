@@ -12,7 +12,7 @@ export const fetchMachineTypes = async () => {
         headers: getHeaders()
     });
     if (!response.ok) {
-        throw new Error('Failed to fetch machine types');
+        throw new Error('Không thể tải danh sách loại máy');
     }
     return response.json();
 };
@@ -24,7 +24,7 @@ export const createMachineType = async (machineType) => {
         body: JSON.stringify(machineType),
     });
     if (!response.ok) {
-        throw new Error('Failed to create machine type');
+        throw new Error('Không thể tạo loại máy mới');
     }
     return response.json();
 };
@@ -36,7 +36,7 @@ export const updateMachineType = async (id, machineType) => {
         body: JSON.stringify(machineType),
     });
     if (!response.ok) {
-        throw new Error('Failed to update machine type');
+        throw new Error('Không thể cập nhật loại máy');
     }
     return response.json();
 };
@@ -44,9 +44,12 @@ export const updateMachineType = async (id, machineType) => {
 export const deleteMachineType = async (id) => {
     const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
-        headers: getHeaders(),
+        headers: getHeaders()
     });
+    
     if (!response.ok) {
-        throw new Error('Failed to delete machine type');
+        throw new Error('Không thể xóa loại máy');
     }
+    
+    return response.json();
 }; 
