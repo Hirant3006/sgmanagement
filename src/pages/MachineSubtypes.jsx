@@ -16,11 +16,8 @@ import {
     SearchOutlined,
     SettingOutlined
 } from '@ant-design/icons';
-import { fetchMachineSubtypes, deleteMachineSubtype, getHeaders } from '../services/machineSubtypeService';
-import { useAuth } from '../context/AuthContext';
-import { updateToken } from '../services/authService';
+import { fetchMachineSubtypes } from '../services/machineSubtypeService';
 import ResizableTable from '../components/ResizableTable';
-import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -35,53 +32,21 @@ const MachineSubtypes = () => {
         name: '',
     });
     const [searchText, setSearchText] = useState('');
-    const navigate = useNavigate();
-    const { isAuthenticated, user } = useAuth();
-
-    // Update token in localStorage
-    useEffect(() => {
-        // This is a temporary fix to update the token
-        const newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NDE2OTI3NywiZXhwIjoxNzQ0MjU1Njc3fQ.VRR4DHVTpbnwBTuWVlgzs9wRiDaqhWFZ6MGE1p1G850';
-        updateToken(newToken);
-    }, []);
 
     // Fetch machine subtypes data
     useEffect(() => {
         const fetchData = async () => {
             try {
-                console.log('Authentication status:', isAuthenticated);
-                console.log('Current user:', user);
-                console.log('Token:', localStorage.getItem('token'));
-                console.log('Environment:', import.meta.env.VITE_APP_ENV);
-                console.log('API URL:', import.meta.env.VITE_API_URL);
-                
-                if (!isAuthenticated) {
-                    console.log('User is not authenticated, redirecting to login');
-                    navigate('/login');
-                    return;
-                }
-                
-                // Check if token exists in localStorage
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.log('No token found in localStorage, redirecting to login');
-                    navigate('/login');
-                    return;
-                }
-                
                 const data = await fetchMachineSubtypes();
                 setMachineSubtypes(data);
             } catch (error) {
                 console.error('Error fetching machine subtypes:', error);
-                if (error.message.includes('401')) {
-                    navigate('/login');
-                }
             }
         };
 
         fetchData();
         setSearchText('');
-    }, [navigate, isAuthenticated, user]);
+    }, []);
 
     // Filter data based on search text
     const getFilteredData = () => {
@@ -139,56 +104,22 @@ const MachineSubtypes = () => {
     };
 
     const handleDelete = async (id) => {
-        try {
-            // Check if the machine subtype is referenced by any machines
-            const response = await fetch(`${API_URL}/machines?subtype_id=${id}`, {
-                headers: getHeaders()
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to check machine references');
-            }
-            
-            const machines = await response.json();
-            
-            if (machines.length > 0) {
-                // Show a warning message
-                Modal.warning({
-                    title: 'Cannot Delete Machine Subtype',
-                    content: `This machine subtype is used by ${machines.length} machine(s). Please remove or update these machines before deleting the subtype.`,
-                    okText: 'OK'
+        if (window.confirm('Bạn có chắc chắn muốn xóa mục này?')) {
+            try {
+                const endpoint = 'machine-subtypes';
+                const response = await fetch(`${API_URL}/${endpoint}/${id}`, {
+                    method: 'DELETE',
                 });
-                return;
-            }
-            
-            // If no machines reference this subtype, proceed with deletion
-            Modal.confirm({
-                title: 'Are you sure you want to delete this machine subtype?',
-                content: 'This action cannot be undone.',
-                okText: 'Yes',
-                okType: 'danger',
-                cancelText: 'No',
-                onOk: async () => {
-                    try {
-                        await deleteMachineSubtype(id);
-                        // Refresh the data
-                        const data = await fetchMachineSubtypes();
-                        setMachineSubtypes(data);
-                    } catch (error) {
-                        console.error('Error deleting data:', error);
-                        Modal.error({
-                            title: 'Error',
-                            content: 'Failed to delete machine subtype. It may be referenced by other records.'
-                        });
-                    }
+
+                if (response.ok) {
+                    // Refresh data
+                    const fetchResponse = await fetch(`${API_URL}/${endpoint}`);
+                    const data = await fetchResponse.json();
+                    setMachineSubtypes(data);
                 }
-            });
-        } catch (error) {
-            console.error('Error checking machine references:', error);
-            Modal.error({
-                title: 'Error',
-                content: 'Failed to check machine references.'
-            });
+            } catch (error) {
+                console.error('Error deleting data:', error);
+            }
         }
     };
 

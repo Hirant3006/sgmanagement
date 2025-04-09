@@ -53,7 +53,7 @@ const MachineManagement = () => {
     return (
         <Content>
             <Card>
-                <Title level={5}>Quản lý máy móc</Title>
+                <Title level={5}>Loại Máy</Title>
                 <Tabs
                     activeKey={currentTab}
                     onChange={handleTabChange}

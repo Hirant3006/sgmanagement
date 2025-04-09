@@ -1,10 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL + '/auth';
-console.log('Auth API URL:', API_URL);
+const API_URL = 'http://localhost:3000/api/auth';
 
 export const login = async (credentials) => {
-    console.log('Login attempt with credentials:', credentials);
-    console.log('Login API URL:', `${API_URL}/login`);
-    
     const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
@@ -18,45 +14,37 @@ export const login = async (credentials) => {
     const data = await response.json();
     // Store the token in localStorage
     localStorage.setItem('token', data.token);
-    // Store the user data in localStorage
-    if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-    }
-    console.log('Login successful, token stored:', data.token);
     return data;
 };
 
 export const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
 };
 
 export const getCurrentUser = () => {
-    const userData = localStorage.getItem('user');
-    if (!userData) return null;
+    const token = localStorage.getItem('token');
+    if (!token) return null;
     
+    // Decode the token to get user information
     try {
-        return JSON.parse(userData);
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        return JSON.parse(jsonPayload);
     } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Error decoding token:', error);
         return null;
     }
 };
 
 export const isAuthenticated = () => {
-    const token = localStorage.getItem('token');
-    console.log('Checking authentication, token:', token);
-    return !!token;
+    return !!localStorage.getItem('token');
 };
 
 export const getAuthHeader = () => {
     const token = localStorage.getItem('token');
-    console.log('Getting auth header, token:', token);
     return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-// Temporary function to update the token
-export const updateToken = (newToken) => {
-    localStorage.setItem('token', newToken);
-    console.log('Token updated in localStorage:', newToken);
 }; 
