@@ -5,9 +5,7 @@ const db = require('../db');
 // Get all machines
 router.get('/', (req, res) => {
     console.log('GET /machines request received');
-    console.log('Query parameters:', req.query);
-    
-    let sql = `
+    const sql = `
         SELECT 
             m.id,
             m.name,
@@ -18,22 +16,11 @@ router.get('/', (req, res) => {
         FROM machines m
         LEFT JOIN machine_types mt ON m.machine_type_id = mt.id
         LEFT JOIN machine_subtypes mst ON m.machine_subtype_id = mst.id
+        ORDER BY m.name ASC
     `;
     
-    const params = [];
-    
-    // Add WHERE clause if subtype_id is provided
-    if (req.query.subtype_id) {
-        sql += ' WHERE m.machine_subtype_id = ?';
-        params.push(req.query.subtype_id);
-    }
-    
-    sql += ' ORDER BY m.name ASC';
-    
     console.log('Executing SQL query:', sql);
-    console.log('Query parameters:', params);
-    
-    db.all(sql, params, (err, rows) => {
+    db.all(sql, [], (err, rows) => {
         if (err) {
             console.error('Error fetching machines:', err);
             return res.status(500).json({ 
